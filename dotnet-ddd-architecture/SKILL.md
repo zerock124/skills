@@ -7,6 +7,33 @@ description: 'DDD .NET 開發架構 SKILL。適用於 ASP.NET Core 分層式專�
 
 這份 SKILL 把 ASP.NET Core 分層式專案裡真正可重複使用的開發方式固定下來，讓後續開發新專案、新功能或新模組時，可以直接照著做。
 
+## 快速導航
+
+### 🚀 開始新專案
+1. 閱讀 [development-web.md](./development-web.md) - 預填專案定義
+2. 執行 Agent Flow Phase 1-5 - 自動收集需求與產出骨架
+3. 參考 [project-intake.md](./references/project-intake.md) - 需求收集指引
+4. 使用 [ProgramSetup.md](./assets/ProgramSetup.md) - 完整啟動設定
+
+### 📦 開發標準 CRUD
+1. [Entity.md](./assets/Entity.md) → [DTO.md](./assets/DTO.md) → [Repository.md](./assets/Repository.md)
+2. [ServiceInterface.md](./assets/ServiceInterface.md) → [Service.md](./assets/Service.md)
+3. [BaseController.md](./assets/BaseController.md) → [Controller.md](./assets/Controller.md)
+4. [Mapping.md](./assets/Mapping.md) → [ServiceTest.md](./assets/ServiceTest.md)
+
+### ⚙️ 開發非標準流程
+- 背景排程：[BackgroundJob.md](./assets/BackgroundJob.md)
+- Webhook：[Webhook.md](./assets/Webhook.md)
+- 資料庫操作：[database.md](./references/database.md)
+- 錯誤處理：[validation.md](./references/validation.md)
+
+### 🐳 部署與維運
+- Docker：[Docker.md](./assets/Docker.md)
+- 架構指引：[architecture.md](./references/architecture.md)
+- 測試策略：[testing.md](./references/testing.md)
+
+---
+
 ## 核心原則
 
 - 先理解專案邊界，再開始寫程式
@@ -23,7 +50,9 @@ description: 'DDD .NET 開發架構 SKILL。適用於 ASP.NET Core 分層式專�
 
 ### Phase 1：需求收集
 
-先向使用者確認以下資訊，未提供的項目要主動詢問：
+**優先讀取 development-web.md**：檢查使用者是否已預填專案定義，已填寫的項目直接採用，未填寫的才詢問。
+
+需確認的資訊（詳見 [project-intake.md](./references/project-intake.md)）：
 
 | 項目 | 說明 | 範例 |
 |------|------|------|
@@ -118,64 +147,152 @@ description: 'DDD .NET 開發架構 SKILL。適用於 ASP.NET Core 分層式專�
 
 當收到需求時，固定依下列順序處理：
 
-1. 判斷是新專案還是既有專案新增功能
-2. 若是新專案，走 Agent Flow Phase 1 → 5
-3. 若是既有功能，走既有專案新增功能流程
-4. 先找對應的模板與參考文件
-5. 再找目前專案中最接近的實作
-6. 接著確認資料流與依賴方向
-7. 再決定要新增哪些檔案
-8. 最後才開始實作與測試
+1. **判斷情境**：新專案還是既有專案新增功能
+2. **讀取定義**：檢查 [development-web.md](./development-web.md) 是否有預填內容
+3. **選擇流程**：
+   - 新專案 → 走 Agent Flow Phase 1 → 5
+   - 既有功能 → 走既有專案新增功能流程
+4. **找模板**：先找對應的模板與參考文件
+   - 標準 CRUD → 使用 assets 中的完整模板
+   - 非標準流程 → 使用 BackgroundJob / Webhook 等專用模板
+5. **找參照**：再找目前專案中最接近的實作
+6. **確認資料流**：確認輸入、輸出、依賴方向
+7. **決定檔案**：決定要新增或修改哪些檔案
+8. **實作與測試**：產出程式碼、同步更新 DI/Mapping、補測試
 
-如果需求是標準 CRUD，先套模板再微調。如果需求是非標準流程，例如 Job、Webhook、Adapter、SignalR、批次匯入匯出、排程通知，就先找流程邊界再設計。
+## 開發情境判斷
 
-## 判斷規則
+### 標準 CRUD 流程
 
-### 標準 CRUD
+**適用情境**：基本的資料增刪查改功能
 
-適合使用以下路徑：
+**使用模板順序**：
+1. [Entity.md](./assets/Entity.md) - 定義實體
+2. [DTO.md](./assets/DTO.md) - 定義資料傳輸物件
+3. [Repository.md](./assets/Repository.md) - 資料存取（通常用泛型即可）
+4. [UnitOfWork.md](./assets/UnitOfWork.md) - 交易管理
+5. [ServiceInterface.md](./assets/ServiceInterface.md) - 服務介面
+6. [Service.md](./assets/Service.md) - 服務實作
+7. [Mapping.md](./assets/Mapping.md) - AutoMapper 設定
+8. [BaseController.md](./assets/BaseController.md) - Request/Response 模型
+9. [Controller.md](./assets/Controller.md) - API 端點
+10. [ServiceTest.md](./assets/ServiceTest.md) - 單元測試
 
-- Domain Entity
-- Domain DTO
-- Service Interface
-- Service Implementation
-- API Request / Response
-- Mapping
-- Controller
-- Unit Test
+**同步更新**：
+- Program.cs：註冊 DI
+- DbContext：若 Code First 需更新 DbSet
+- 資料庫：執行 scaffold 或 migration
 
 ### 非標準流程
 
-適合先定義流程，再決定放哪裡：
+**背景排程**：
+- 使用 [BackgroundJob.md](./assets/BackgroundJob.md)
+- 先定義排程目的、執行頻率、失敗策略
+- 決定使用 IHostedService 或 Quartz.NET
+- 補充 appsettings.json 設定
 
-- Job：先定義排程、觸發條件、例外處理，再做 Job 與註冊
-- Webhook：先定義來源驗證、簽章、回應格式，再做 Filter / Controller / Service
-- Adapter：先定義第三方輸入輸出與失敗重試，再做 Adapter / Helper
-- SignalR：先定義事件、頻率、推播對象，再做 Hub 與 Service
-- 匯出匯入：先定義檔案格式、欄位對應、驗證規則，再做 Service / Helper
+**Webhook 接收**：
+- 使用 [Webhook.md](./assets/Webhook.md)
+- 先定義來源驗證、簽章檢查、回應格式
+- 實作 Filter / Controller / Service
+- 設定簽章金鑰與日誌
+
+**外部 API 串接**：
+- 建立 Adapter / Helper 類別
+- 先定義輸入輸出與失敗重試策略
+- 使用 HttpClient 或第三方 SDK
+- 處理逾時、錯誤、重試
+
+**匯出 / 匯入**：
+- 先定義檔案格式、欄位對應、驗證規則
+- 決定使用 EPPlus / ClosedXML / NPOI
+- 實作 Service / Helper
+- 處理大檔案與記憶體管理
+
+**即時推播 (SignalR)**：
+- 先定義事件、頻率、推播對象
+- 建立 Hub 與相關 Service
+- 註冊 SignalR 與端點
+- 處理連線管理與例外
 
 ## 必做清單
 
-每次我幫你產出內容時，至少要回答這些問題：
+每次完成功能開發時，必須確認以下項目：
 
-- 這個功能放在哪一層
-- 需要新增哪些檔案
-- 哪些既有檔案要同步修改
-- AutoMapper 要怎麼接
-- DI 要怎麼註冊
-- 測試要怎麼寫
-- 這次變更如何驗證
+### 程式碼層面
+- [ ] 這個功能放在哪一層（Domain / Infrastructure / Service / API）
+- [ ] 需要新增哪些檔案（依模板產出完整檔案）
+- [ ] 哪些既有檔案要同步修改（DbContext / Program.cs / appsettings.json）
+
+### 整合層面
+- [ ] AutoMapper 設定已補齊（Service 層 + API 層）
+- [ ] DI 已正確註冊（Service / Repository / UnitOfWork）
+- [ ] 資料庫變更已處理（scaffold 或 migration）
+
+### 測試層面
+- [ ] 單元測試已新增（至少涵蓋成功路徑與錯誤情境）
+- [ ] 測試可通過編譯與執行
+
+### 驗證層面
+- [ ] 提供驗證方式（API 端點、測試案例、預期結果）
+- [ ] 若有風險或限制，明確說明
+
+### 文件層面
+- [ ] 產出變更清單（新增檔案、修改檔案、設定變更）
+- [ ] 若有資料庫變更，提供執行指令
 
 ## 交付格式
 
-如果你要我直接動手，優先產出以下內容：
+每次交付時，提供以下資訊：
 
-- 受影響檔案清單
-- 新增或修改的類別
-- 需要同步調整的設定或 DI
-- 測試案例
-- 驗證方式
-- 若有資料庫變更，提供 scaffold / migration / deployment 方式
+### 1. 功能摘要
+- 功能名稱與目的
+- 影響範圍（新增 / 修改 / 刪除）
+
+### 2. 檔案清單
+**新增檔案**：
+- Domain/Entities/{Entity}.cs
+- Domain/DTOs/{Feature}/{Feature}DTO.cs
+- Service/Interface/I{Feature}Service.cs
+- Service/Implements/{Feature}Service.cs
+- API/Controllers/{Feature}Controller.cs
+- API/Models/{Feature}/{Feature}Request.cs
+- API/Models/{Feature}/{Feature}Response.cs
+- API/Mappings/{Feature}Mapping.cs
+- Service/Mappings/{Feature}Mapping.cs
+- Tests/{Feature}ServiceTests.cs
+
+**修改檔案**：
+- Infrastructure/Data/{Project}DbContext.cs（新增 DbSet）
+- API/Program.cs（註冊 DI）
+- API/appsettings.json（若有新設定）
+
+### 3. 資料庫變更
+若有資料表變更：
+```powershell
+# Database First
+dotnet ef dbcontext scaffold "ConnectionString" Microsoft.EntityFrameworkCore.SqlServer -o Entities -c YourDbContext --context-dir Data --force
+
+# Code First
+dotnet ef migrations add Add{Feature}Table --project ../YourProject.Infrastructure --startup-project ../YourProject.API
+dotnet ef database update --project ../YourProject.Infrastructure --startup-project ../YourProject.API
+```
+
+### 4. DI 註冊
+```csharp
+// Program.cs
+builder.Services.AddScoped<I{Feature}Service, {Feature}Service>();
+```
+
+### 5. 驗證方式
+- API 端點：`POST /api/{feature}`
+- 測試案例：`{Feature}ServiceTests.Create_WithValidData_ReturnsTrue`
+- 預期結果：回傳 200 且資料正確儲存
+
+### 6. 已知限制與風險
+- 若有尚未實作的功能
+- 若有效能考量
+- 若有相依性問題
 
 ## 禁止事項
 
@@ -201,19 +318,46 @@ description: 'DDD .NET 開發架構 SKILL。適用於 ASP.NET Core 分層式專�
 
 ## 參考文件
 
+### 流程與架構
 - [project-intake.md](./references/project-intake.md)：新專案啟動時的需求收集與決策流程
 - [architecture.md](./references/architecture.md)：分層架構與各層責任
 - [patterns.md](./references/patterns.md)：AutoMapper、Repository、UoW、Job 等開發模式
+
+### 設定與資料庫
 - [configuration.md](./references/configuration.md)：設定、認證、CORS、資料庫、日誌
+- [database.md](./references/database.md)：Database First / Code First、Scaffold / Migration 操作指引
+
+### 驗證與測試
+- [validation.md](./references/validation.md)：錯誤處理、驗證策略、異常處理
 - [testing.md](./references/testing.md)：測試策略、命名、工具與覆蓋率
 
 ## 模板資產
 
-- [ServiceInterface.md](./assets/ServiceInterface.md)
-- [Service.md](./assets/Service.md)
-- [Mapping.md](./assets/Mapping.md)
-- [Controller.md](./assets/Controller.md)
-- [ServiceTest.md](./assets/ServiceTest.md)
+### Domain 層
+- [Entity.md](./assets/Entity.md)：Entity 實體類別樣板
+- [DTO.md](./assets/DTO.md)：DTO 與共用基底類別樣板
+
+### Infrastructure 層
+- [Repository.md](./assets/Repository.md)：泛型與特定 Repository 樣板
+- [UnitOfWork.md](./assets/UnitOfWork.md)：交易管理與使用情境
+
+### Service 層
+- [ServiceInterface.md](./assets/ServiceInterface.md)：Service 介面樣板
+- [Service.md](./assets/Service.md)：Service 實作樣板
+- [ServiceTest.md](./assets/ServiceTest.md)：單元測試樣板
+
+### API 層
+- [BaseController.md](./assets/BaseController.md)：BaseController 與 Request/Response 樣板
+- [Controller.md](./assets/Controller.md)：Controller 實作樣板
+- [Mapping.md](./assets/Mapping.md)：AutoMapper Profile 樣板
+
+### 啟動與部署
+- [ProgramSetup.md](./assets/ProgramSetup.md)：Program.cs 完整設定與 NuGet 套件
+- [Docker.md](./assets/Docker.md)：Dockerfile、docker-compose 與 Azure 部署
+
+### 非標準流程
+- [BackgroundJob.md](./assets/BackgroundJob.md)：背景排程 (IHostedService / Quartz)
+- [Webhook.md](./assets/Webhook.md)：Webhook 接收與簽章驗證
 
 ## 完成定義
 
