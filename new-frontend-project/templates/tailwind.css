@@ -1,0 +1,57 @@
+@import 'tailwindcss';
+
+/*
+ * Tailwind CSS v4 主題設定。
+ *
+ * v4 的主題定義在這個 @theme 區塊，不再使用 tailwind.config.js。
+ * 每個 --color-* 變數都會自動產生對應的 utility（bg-primary、text-danger…）。
+ *
+ * 配色原則：primary 與 danger 的色相至少相距 30°。ERP 表格的操作按鈕通常密集
+ * 並排，兩者太接近時使用者會誤點。success / warning / danger / info 之間也
+ * 同樣要拉開色相角度。
+ */
+@theme {
+  /* 主色調 */
+  --color-primary: #4f46e5;
+  --color-primary-hover: #4338ca;
+  --color-primary-light: #eef2ff;
+
+  /* 側邊欄配色 */
+  --color-sidenav-bg: #1e293b;
+  --color-sidenav-bg-dark: #0f172a;
+  --color-sidenav-text: #cbd5e1;
+  --color-sidenav-text-active: #ffffff;
+  --color-sidenav-hover: rgba(255, 255, 255, 0.06);
+  --color-sidenav-active: rgba(79, 70, 229, 0.18);
+  --color-sidenav-border: rgba(255, 255, 255, 0.08);
+
+  /* 狀態色 */
+  --color-success: #15803d;
+  --color-success-hover: #166534;
+  --color-success-light: #dcfce7;
+
+  --color-warning: #eab308;
+  --color-warning-hover: #ca8a04;
+  --color-warning-light: #fef9c3;
+
+  --color-danger: #dc2626;
+  --color-danger-hover: #b91c1c;
+  --color-danger-light: #fee2e2;
+
+  --color-info: #2563eb;
+  --color-info-hover: #1d4ed8;
+  --color-info-light: #dbeafe;
+
+  /* 擴充語意色（核准／駁回／收料等額外操作） */
+  --color-purple: #7c3aed;
+  --color-purple-hover: #6d28d9;
+  --color-purple-light: #ede9fe;
+
+  --color-teal: #0d9488;
+  --color-teal-hover: #0f766e;
+  --color-teal-light: #ccfbf1;
+
+  /* 版面尺寸 token */
+  --spacing-sidenav: 260px;
+  --spacing-topbar: 44px;
+}
